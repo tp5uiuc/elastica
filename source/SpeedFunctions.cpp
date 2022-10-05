@@ -45,9 +45,10 @@ void vDiff(const vector<Vector3> &A, vector<Vector3> &B) {
   assert(A.size() >= 1);
   vector<Vector3>::iterator iterB;
   vector<Vector3>::const_iterator iterA = A.begin();
-  for (iterB = B.begin(); iterB != B.end(); iterB++)
+  for (iterB = B.begin(); iterB != B.end(); ++iterA, ++iterB)
     Vector3::a_minus_b_equal_c(
-        (*++iterA), (*iterA),
+        // (*++iterA), (*iterA),
+        *std::next(iterA), *iterA,
         (*iterB));  // in-place operator, no memory allocation
 }
 
@@ -68,9 +69,10 @@ void vRotDiff(const vector<Matrix3> &A, vector<Matrix3> &B) {
   assert(A.size() > 1);
   vector<Matrix3>::const_iterator iterA = A.begin();
   vector<Matrix3>::iterator iterB = B.begin();
-  for (iterB = B.begin(); iterB != B.end(); iterB++)
+  for (iterB = B.begin(); iterB != B.end(); iterA++, iterB++)
     Matrix3::matrix_times_transposed(
-        (*++iterA), (*iterA),
+        *std::next(iterA), *iterA,
+        // (*++iterA), (*iterA),
         (*iterB));  // in-place operator, no memory allocation
 }
 
