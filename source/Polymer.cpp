@@ -7,6 +7,10 @@
 
 #include "Polymer.h"
 
+#include <vector>
+#include <tuple>
+#include <fstream>
+
 void Polymer::computeEnergies() {
   bendingEnergy = 0.0;
   shearEnergy = 0.0;
@@ -45,6 +49,36 @@ bool Polymer::simulate(const REAL simulationTime, const REAL dt0,
   REAL initial_density = rodptrs[42]->density;
   REAL initial_radius = rodptrs[42]->r[0];
   REAL final_radius = 2. * initial_radius;
+#endif
+
+// Turn on to print energies
+// #define FLAG_COLLECT_STATISTICS 1
+
+#if defined FLAGBUTTERFLY && FLAG_COLLECT_STATISTICS
+    // Collect statistics
+  using Temporal = REAL;
+  using BendEnergy = REAL;
+  using ShearEnergy = REAL;
+  using TranslationEnergy = REAL;
+  using RotationEnergy = REAL;
+  using TimesAndEnergies = std::tuple<Temporal, BendEnergy, ShearEnergy,
+                                      TranslationEnergy, RotationEnergy>;
+
+  std::vector<TimesAndEnergies> stats;
+  constexpr std::size_t write_interval = 200UL;
+  {
+    const auto n_iterations = std::size_t(simulationTime / dt0);
+    stats.reserve(n_iterations / write_interval);
+  }
+
+   auto collect_stats = [&]() {
+    computeEnergies();
+    stats.push_back(std::make_tuple(time,
+                                   bendingEnergy, shearEnergy, translationalEnergy, rotationalEnergy
+                                   ));
+  };
+
+  collect_stats();
 #endif
 
   while (time <= simulationTime) {
@@ -171,6 +205,7 @@ bool Polymer::simulate(const REAL simulationTime, const REAL dt0,
     }
 #endif
 
+
     // Integrate
     REAL dt = 0.0;
 
@@ -181,6 +216,13 @@ bool Polymer::simulate(const REAL simulationTime, const REAL dt0,
     diagFotoTimer += dt;
     povrayFotoTimer += dt;
     step += 1;
+
+#if defined FLAGBUTTERFLY && FLAG_COLLECT_STATISTICS
+
+    if (not(step % write_interval)) {
+      collect_stats();
+    }
+#endif
 
     if (step % 25000 == 0) {
       cout << "Simulated time : " << time << endl;
@@ -228,6 +270,32 @@ bool Polymer::simulate(const REAL simulationTime, const REAL dt0,
 
   // Compute energies
   computeEnergies();
+
+#if defined FLAGBUTTERFLY && FLAG_COLLECT_STATISTICS
+
+  std::ofstream my_file;
+  my_file.open("energies.csv");
+  constexpr auto temporal = 0UL;
+  constexpr auto bend_elastic_energy = 1UL;
+  constexpr auto shear_elastic_energy = 2UL;
+  constexpr auto translation_energy = 3UL;
+  constexpr auto rotation_energy = 4UL;
+  for (auto const& st : stats) {
+    const auto total_energy =
+        std::get<bend_elastic_energy>(st) + std::get<shear_elastic_energy>(st) +
+        std::get<translation_energy>(st) + std::get<rotation_energy>(st);
+    my_file << std::setprecision(16)  //
+            << std::get<temporal>(st) << "," << std::get<translation_energy>(st)
+            << "," << std::get<rotation_energy>(st) << ","
+            << std::get<bend_elastic_energy>(st) << ","
+            << std::get<shear_elastic_energy>(st) << "," << total_energy
+            << "\n";
+  }
+  my_file << std::endl;
+  my_file.close();
+
+
+#endif
 
   return true;
 }
