@@ -26,7 +26,7 @@ VPATH := ../source/
 .DEFAULT_GOAL := butterfly
 
 #Linking stage
-butterfly: CPPSETTINGS += -DFLAGBUTTERFLY
+butterfly: CPPSETTINGS += -DFLAGBUTTERFLY # -DFLAG_COLLECT_STATISTICS
 butterfly: $(COMMON_OBJS) Butterfly.o
 	$(CC) $(CPPSETTINGS) $(LIB) $^ -o $@
 	@echo done

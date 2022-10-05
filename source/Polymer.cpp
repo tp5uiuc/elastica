@@ -51,9 +51,6 @@ bool Polymer::simulate(const REAL simulationTime, const REAL dt0,
   REAL final_radius = 2. * initial_radius;
 #endif
 
-// Turn on to print energies
-// #define FLAG_COLLECT_STATISTICS 1
-
 #if defined FLAGBUTTERFLY && FLAG_COLLECT_STATISTICS
     // Collect statistics
   using Temporal = REAL;
