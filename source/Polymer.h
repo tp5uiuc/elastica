@@ -83,6 +83,7 @@ class Polymer {
     endTimeStats = _endTimeStats;
   };
 
+  REAL getTotalShearEnergy() { return shearEnergy; }
   REAL getTotalBendingEnergy() { return bendingEnergy; }
   REAL getTotalTranslationalEnergy() { return translationalEnergy; }
   REAL getTotalEnergy() { return totalInternalEnergy; }
