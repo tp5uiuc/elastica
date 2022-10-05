@@ -2,6 +2,17 @@
 #include "Butterfly.h"
 #include <string>
 #include <algorithm>
+#include <memory>
+
+namespace cpp14 {
+
+  template<typename T, typename... Args>
+  std::unique_ptr<T> make_unique(Args&&... args)
+  {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+  }
+
+}
 
 std::string getCmdOption(int argc, const char* argv[], const std::string& option)
 {
@@ -262,30 +273,44 @@ bool Butterfly::_test(const int nEdges, const REAL _dt,
   // Use linear load-strain (hence the true flag at the end)!!!
   const bool useSelfContact = false;
  
+  vector<Rod *> rodPtrs(n_rod, nullptr);
 
-  Rod *rod = butterflyRod(
-      n, totalMass, r0, J0, B0, S0, L0, inclination, originRod,
-      directionRod, normalRod, nu, relaxationNu, useSelfContact);
- 
+  for (auto rod_idx = 0UL; rod_idx < n_rod; ++rod_idx){
+    // displace origin?
+    Rod *rod = butterflyRod(
+        n, totalMass, r0, J0, B0, S0, L0, inclination, originRod,
+        directionRod, normalRod, nu, relaxationNu, useSelfContact);
 
-  vector<Rod *> rodPtrs;
-  rodPtrs.push_back(rod);
-  rod->update(0.0);
-  rod->computeEnergies();
+    rodPtrs[rod_idx] = rod;
+    rod->update(0.0);
+    rod->computeEnergies();
+  }
+
+
+#if defined FLAG_COLLECT_STATISTICS
   printEnergies(rodPtrs, 0, 0.0);
+#endif
 
   // Pack boundary conditions
-  FreeBC freeBC = FreeBC();
-  vector<RodBC *> boundaryConditionsPtrs;
-  boundaryConditionsPtrs.push_back(&freeBC);
+  auto freeBC = cpp14::make_unique<FreeBC>();
+  vector<RodBC *> boundaryConditionsPtrs(n_rod, nullptr);
+  std::generate(boundaryConditionsPtrs.begin(), boundaryConditionsPtrs.end(), [&](){
+    // Pointer is always valid since its a stack variable
+    return freeBC.get();
+  });
 
   // Pack all forces together
-  vector<ExternalForces*> externalForcesPtrs;
-  NoForces endpointsForce = NoForces();
-  MultipleForces multipleForces;
-  multipleForces.add(&endpointsForce);
-  MultipleForces* multipleForcesPtr = multipleForces.get();
-  externalForcesPtrs.push_back(multipleForcesPtr);
+  auto endpointsForce = cpp14::make_unique<NoForces>();
+  vector<ExternalForces*> externalForcesPtrs(n_rod, nullptr);
+  std::generate(externalForcesPtrs.begin(), externalForcesPtrs.end(), [&](){
+    // Pointer is always valid since its a stack variable
+    return endpointsForce.get();
+  });
+
+  // MultipleForces multipleForces;
+  // multipleForces.add(&endpointsForce);
+  // MultipleForces* multipleForcesPtr = multipleForces.get();
+  // externalForcesPtrs.push_back(&endpointsForce);
 
   // Empty interaction forces (no substrate in this case)
   vector<Interaction *> substrateInteractionsPtrs;
@@ -318,6 +343,7 @@ bool Butterfly::_test(const int nEdges, const REAL _dt,
   if (!goodRun)
     throw "not good run in localized helical buckling, what is going on?";
 
+#if defined FLAG_COLLECT_STATISTICS
   cout << "total internal energy = " << poly.getTotalEnergy() << endl;
   cout << "total translational energy = " << poly.getTotalTranslationalEnergy()
        << endl;
@@ -327,6 +353,12 @@ bool Butterfly::_test(const int nEdges, const REAL _dt,
        << endl;
   cout << "total shear energy = " << poly.getTotalShearEnergy()
        << endl;
+#endif
+
+  // return memory because I am not a monster.
+   std::for_each(rodPtrs.begin(), rodPtrs.end(), [](Rod* r){
+    delete r;
+   });
 
   return false;
 }
