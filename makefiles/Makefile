@@ -5,6 +5,7 @@ username = $(shell whoami)
 #CC=/usr/local/Cellar/gcc/8.2.0/bin/g++-8
 CPPSETTINGS+= -std=c++11
 CPPFLAGS+= -O3 -Wno-all -Wno-deprecated -w -Wno-reorder #-march=native
+# CPPFLAGS+= -g -O0 -Wno-all -Wno-deprecated -w -Wno-reorder #-march=native
 
 COMMON_OBJS = \
 	main.o \
@@ -22,7 +23,13 @@ COMMON_OBJS = \
 	MathFunctions.o
 
 VPATH := ../source/
-.DEFAULT_GOAL := elbow
+.DEFAULT_GOAL := butterfly
+
+#Linking stage
+butterfly: CPPSETTINGS += -DFLAGBUTTERFLY
+butterfly: $(COMMON_OBJS) Butterfly.o
+	$(CC) $(CPPSETTINGS) $(LIB) $^ -o $@
+	@echo done
 
 #Linking stage
 elbow: CPPSETTINGS += -DFLAGELBOW
@@ -115,3 +122,4 @@ clean:
 	rm -f walker
 	rm -f muscularsnake
 	rm -f wing
+	rm -f butterfly
