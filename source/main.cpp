@@ -6,6 +6,7 @@
  */
 
 #include "ArgumentParser.h"
+#include "Butterfly.h"
 #include "Elbow.h"
 #include "FixedJoint.h"
 #include "Flagella.h"
@@ -84,6 +85,9 @@ int main(const int argc, const char **argv) {
 
   const string studycase = parser("-study").asString();
 
+#ifdef FLAGBUTTERFLY
+  test = new Butterfly(argc, argv);
+#endif
 #ifdef FLAGELBOW
   test = new Elbow(argc, argv);
 #endif
