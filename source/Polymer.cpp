@@ -10,6 +10,7 @@
 #include <vector>
 #include <tuple>
 #include <fstream>
+#include <iomanip>
 
 void Polymer::computeEnergies() {
   bendingEnergy = 0.0;
