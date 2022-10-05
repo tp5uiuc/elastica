@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <memory>
+#include <chrono>
 
 namespace cpp14 {
 
@@ -336,8 +337,12 @@ bool Butterfly::_test(const int nEdges, const REAL _dt,
   // Simulate
   Polymer poly = Polymer(integrator);
   // bool goodRun = true;
+
+  auto start_time = std::chrono::high_resolution_clock::now();
   const bool goodRun = poly.simulate(timeSimulation, dt, diagPerUnitTime,
                                      povrayPerUnitTime, outfileName);
+  auto end_time = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed (end_time-start_time);
 
   // Throw exception if something went wrong
   if (!goodRun)
@@ -355,6 +360,8 @@ bool Butterfly::_test(const int nEdges, const REAL _dt,
        << endl;
 #endif
 
+  cout << "elapsed time : " << elapsed.count() << endl;
+  
   // return memory because I am not a monster.
    std::for_each(rodPtrs.begin(), rodPtrs.end(), [](Rod* r){
     delete r;
