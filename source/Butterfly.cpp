@@ -360,7 +360,23 @@ bool Butterfly::_test(const int nEdges, const REAL _dt,
        << endl;
 #endif
 
-  cout << "elapsed time : " << elapsed.count() << endl;
+  auto const delimiter = ",";  // ?
+  std::string const header_indicator = "#";
+  std::ostringstream ss;
+  ss << "code_part" << delimiter<< "total";
+  std::string const header = ss.str();
+
+  auto const horizontal_line =
+      header_indicator + " " + std::string((header).size() - 2, '-');
+
+  std::ofstream ofs;
+  ofs.open("butterfly_profile_old_elastica.csv");
+
+  ofs << horizontal_line << "\n";
+  ofs << header << "\n";
+  ofs << "Total" << delimiter << elapsed.count() << "\n";
+  ofs.close();
+
   
   // return memory because I am not a monster.
    std::for_each(rodPtrs.begin(), rodPtrs.end(), [](Rod* r){
