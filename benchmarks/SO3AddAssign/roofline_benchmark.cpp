@@ -31,9 +31,9 @@ void kernel(Holder * const __restrict__ rod){
 
 
 int main() {
-	REAL coeffDt = 0.02; 
+	REAL coeffDt = 1.0; 
 
-	const std::size_t n_values{1 << 12};  // 4096
+	const std::size_t n_values{1 << 16};  // 4096
 	const std::size_t n_samples{1 << 14};
 	std::cout << "(" << n_values << ", " << n_samples << ")" << std::endl;
 
