@@ -34,11 +34,14 @@ int main() {
 	REAL coeffDt = 0.02; 
 
 	const std::size_t n_values{1 << 12};  // 4096
+	const std::size_t n_samples{1 << 14};
+	std::cout << "(" << n_values << ", " << n_samples << ")" << std::endl;
+
 	Holder holder(n_values);
 
     std::random_device rd{};
     std::mt19937 gen{rd()};
-    std::normal_distribution<REAL> d{1.0, 0.1};
+    std::normal_distribution<REAL> d{1.0, 0.2};
 
 	std::generate(holder.w.begin(), holder.w.end(), [&](){
 		return Vector3{d(gen), d(gen), d(gen)};
@@ -52,13 +55,11 @@ int main() {
 	});
 	v_a_times_b_equal_c(holder.w, coeffDt, holder.tempVV3_n);  // in-place
 
-	std::cout << holder.Q.size() << std::endl;
-
-	const std::size_t n_samples(1000000UL);
 
 	for (std::size_t i = 0; i < n_samples; ++i)
 		kernel(&holder);
-
+ 
+#ifdef CHECK_RESULTS
 	// Ensure no-nans for sanity
 	const bool no_nans = std::none_of(holder.w.cbegin(), holder.w.cend(), [](Vector3 const& v){
 		return (std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z));  
@@ -69,10 +70,11 @@ int main() {
 			std::isnan(m.r3c1)|| std::isnan(m.r3c2)|| std::isnan(m.r3c3));
 	});
 
-	if (no_nans){
-		return EXIT_SUCCESS;		
-	} else{
+	if (!no_nans) {
 		throw std::runtime_error("Nans encountered");
 		return EXIT_FAILURE;
 	}
+#endif
+
+	return EXIT_SUCCESS;
 }
