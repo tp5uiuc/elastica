@@ -216,15 +216,16 @@ bool Polymer::simulate(const REAL simulationTime, const REAL dt0,
     step += 1;
 
 #if defined FLAGBUTTERFLY && FLAG_COLLECT_STATISTICS
-
     if (not(step % write_interval)) {
       collect_stats();
     }
 #endif
 
+#if defined FLAG_COLLECT_STATISTICS
     if (step % 25000 == 0) {
       cout << "Simulated time : " << time << endl;
     }
+#endif
 
 #ifdef FLAGELBOW
     // Parameters change for artificial muscle.  i=42.

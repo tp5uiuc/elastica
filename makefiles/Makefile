@@ -4,7 +4,7 @@ username = $(shell whoami)
 #CC=$(shell which g++)
 #CC=/usr/local/Cellar/gcc/8.2.0/bin/g++-8
 CPPSETTINGS+= -std=c++11
-CPPFLAGS+= -O3 -Wno-all -Wno-deprecated -w -Wno-reorder #-march=native
+CPPFLAGS+= -O3 -DNDEBUG -Wno-all -Wno-deprecated -w -Wno-reorder -march=native
 # CPPFLAGS+= -g -O0 -Wno-all -Wno-deprecated -w -Wno-reorder #-march=native
 
 COMMON_OBJS = \
