@@ -49,7 +49,6 @@ std::string getCmdOption(int argc, const char* argv[], const std::string& option
      return cmd;
 }
 
-
 int main(const int argc, const char **argv) {
 	std::string n_values_as_str = getCmdOption(argc, argv, "-n_values=");
 	std::string n_samples_as_str = getCmdOption(argc, argv, "-n_samples=");
