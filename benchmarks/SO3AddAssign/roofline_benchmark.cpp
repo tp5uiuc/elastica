@@ -54,7 +54,7 @@ int main(const int argc, const char **argv) {
 
 	const std::size_t n_values = std::stoul(n_values_as_str,nullptr,0);
 	const std::size_t n_samples = std::stoul(n_samples_as_str,nullptr,0);
-	const std::size_t increment = std::stod(angle_as_str, nullptr);
+	const REAL increment = std::stod(angle_as_str, nullptr);
 
 	// const std::size_t n_values{1 << 16};  // 4096
 	// const std::size_t n_samples{1 << 14};
