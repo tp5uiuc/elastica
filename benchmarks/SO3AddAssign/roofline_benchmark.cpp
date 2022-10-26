@@ -29,12 +29,35 @@ void kernel(Holder * const __restrict__ rod){
 	v_timesequal(rod->tempVM3_n, rod->Q);                  // in-place	
 }
 
+std::string getCmdOption(int argc, const char* argv[], const std::string& option)
+{
+    std::string cmd;
+     for( int i = 0; i < argc; ++i)
+     {
+          std::string arg = argv[i];
+          if(0 == arg.find(option))
+          {
+               std::size_t found = arg.find_first_of("=");
+               cmd =arg.substr(found + 1);
+               return cmd;
+          }
+     }
+     return cmd;
+}
 
-int main() {
+int main(const int argc, const char **argv) {
 	REAL coeffDt = 1.0; 
 
-	const std::size_t n_values{1 << 16};  // 4096
-	const std::size_t n_samples{1 << 14};
+	std::string n_values_as_str = getCmdOption(argc, argv, "-n_values=");
+	std::string n_samples_as_str = getCmdOption(argc, argv, "-n_samples=");
+	std::string angle_as_str = getCmdOption(argc, argv, "-inclination=");
+
+	const std::size_t n_values = std::stoul(n_values_as_str,nullptr,0);
+	const std::size_t n_samples = std::stoul(n_samples_as_str,nullptr,0);
+	const std::size_t increment = std::stod(angle_as_str, nullptr);
+
+	// const std::size_t n_values{1 << 16};  // 4096
+	// const std::size_t n_samples{1 << 14};
 	std::cout << "(" << n_values << ", " << n_samples << ")" << std::endl;
 
 	Holder holder(n_values);
@@ -47,7 +70,7 @@ int main() {
 		return Vector3{d(gen), d(gen), d(gen)};
 	});
 	std::generate(holder.Q.begin(), holder.Q.end(), [&](){
-		const auto angle = d(gen) * M_PI / 3.0; // around 6.0
+		const auto angle = d(gen) * increment; // M_PI / 3.0; // around 6.0
 		const Vector3 r1{std::cos(angle), -std::sin(angle), 0.0};
 		const Vector3 r2{std::sin(angle), std::cos(angle), 0.0};
 		const Vector3 r3{0.0, 0.0, 1.0};
