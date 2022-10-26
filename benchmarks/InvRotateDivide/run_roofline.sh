@@ -23,6 +23,6 @@ done
 # Inclination is in radian degree increments and may need to change
 N_VALUES=${N_VALUES:-"65536"}
 N_SAMPLES=${N_SAMPLES:-"16384"}
-INCLINATION=${INCLINATION:-"1.0472"}
+INCLINATION=${INCLINATION:-"0.157"}
 
 ./roofline -n_values=${N_VALUES} -n_samples=${N_SAMPLES} -inclination=${INCLINATION}
