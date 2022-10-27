@@ -2,7 +2,7 @@
 
 while [ $# -gt 0 ]; do
 	case "$1" in
-	-v | -nvalues | --n_values)
+	-n | -nvalues | --n_values)
 		N_VALUES="$2"
 		;;
 	-s | -nsamples | --n_samples)
@@ -21,4 +21,4 @@ done
 N_VALUES=${N_VALUES:-"65536"}
 N_SAMPLES=${N_SAMPLES:-"16384"}
 
-./roofline -n_values=${N_VALUES} -n_samples=${N_SAMPLES}
+./roofline -n_values="${N_VALUES}" -n_samples="${N_SAMPLES}"
