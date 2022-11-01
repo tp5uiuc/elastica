@@ -8,6 +8,8 @@
 #include "Matrix3.h"
 #include "SpeedFunctions.h"
 
+#include "benchmark.hpp"
+
 template <typename T> 
 using V = std::vector<T>;
 
@@ -50,37 +52,53 @@ int main(const int argc, const char **argv) {
 
 	std::string n_values_as_str = getCmdOption(argc, argv, "-n_values=");
 	std::string n_samples_as_str = getCmdOption(argc, argv, "-n_samples=");
+	std::string n_objects_as_str = getCmdOption(argc, argv, "-n_objects=");
 	std::string angle_as_str = getCmdOption(argc, argv, "-inclination=");
 
 	const std::size_t n_values = std::stoul(n_values_as_str,nullptr,0);
 	const std::size_t n_samples = std::stoul(n_samples_as_str,nullptr,0);
+	const std::size_t n_objects = std::stoul(n_objects_as_str, nullptr, 0);
 	const REAL increment = std::stod(angle_as_str, nullptr);
 
 	// const std::size_t n_values{1 << 16};  // 4096
 	// const std::size_t n_samples{1 << 14};
 	std::cout << "(" << n_values << ", " << n_samples << ")" << std::endl;
 
-	Holder holder(n_values);
+	V<Holder> holders;
+	for (auto i = 0UL; i < n_objects; ++i)
+		holders.emplace_back(n_values);
 
     std::random_device rd{};
     std::mt19937 gen{rd()};
     std::normal_distribution<REAL> d{1.0, 0.2};
 
-	std::generate(holder.w.begin(), holder.w.end(), [&](){
-		return Vector3{d(gen), d(gen), d(gen)};
-	});
-	std::generate(holder.Q.begin(), holder.Q.end(), [&](){
-		const auto angle = d(gen) * increment; // M_PI / 3.0; // around 6.0
-		const Vector3 r1{std::cos(angle), -std::sin(angle), 0.0};
-		const Vector3 r2{std::sin(angle), std::cos(angle), 0.0};
-		const Vector3 r3{0.0, 0.0, 1.0};
-		return Matrix3{r1, r2, r3};
-	});
-	v_a_times_b_equal_c(holder.w, coeffDt, holder.tempVV3_n);  // in-place
+    for (auto& holder : holders){
+		std::generate(holder.w.begin(), holder.w.end(), [&](){
+			return Vector3{d(gen), d(gen), d(gen)};
+		});
+		std::generate(holder.Q.begin(), holder.Q.end(), [&](){
+			const auto angle = d(gen) * increment; // M_PI / 3.0; // around 6.0
+			const Vector3 r1{std::cos(angle), -std::sin(angle), 0.0};
+			const Vector3 r2{std::sin(angle), std::cos(angle), 0.0};
+			const Vector3 r3{0.0, 0.0, 1.0};
+			return Matrix3{r1, r2, r3};
+		});
+		v_a_times_b_equal_c(holder.w, coeffDt, holder.tempVV3_n);  // in-place
+	}
 
+	auto run_holder_profile = [&]() {
+		for (auto& holder : holders)
+		  kernel(&holder);
+	};
 
+#ifdef BENCHMARK_RESULTS
+	auto const benchmark_results = Tools::benchmark(run_holder_profile);
+	std::cout << benchmark_results << std::endl;
+#else
 	for (std::size_t i = 0; i < n_samples; ++i)
-		kernel(&holder);
+		run_holder_profile();
+#endif
+
  
 #ifdef CHECK_RESULTS
 	// Ensure no-nans for sanity
