@@ -20,6 +20,11 @@ roofline: $(COMMON_OBJS) roofline_benchmark.cpp
 	$(CC) $(CPPSETTINGS) $(LIB) $(INC) $^ -o $@
 	@echo done
 
+#Linking stage
+benchmark: $(COMMON_OBJS) roofline_benchmark.cpp
+	$(CC) $(CPPSETTINGS) $(LIB) -DBENCHMARK_RESULTS $(INC) $^ -o $@
+	@echo done
+
 #Compiling stage
 %.o: %.cpp
 	$(CC) $(CPPSETTINGS) $(CPPFLAGS) -c $^ -o $@
