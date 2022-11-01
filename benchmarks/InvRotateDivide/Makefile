@@ -33,3 +33,4 @@ clean:
 	rm -f *.o
 	rm -f *.s
 	rm -f roofline
+	rm -f benchmark
